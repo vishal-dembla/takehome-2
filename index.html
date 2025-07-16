@@ -1,1 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take-Home Salary Calculator India (FY 2025-26)</title>
+    <meta name="description" content="A minimalist, educational calculator to understand your salary breakdown and taxes for FY 2025-26.">
 
+    <!-- 1. Import the Correct Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- 2. Custom CSS for Single-Column Layout -->
+    <style>
+        /* --- Base & Typography --- */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background-color: #f9f8f5;
+            color: #333;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Layout --- */
+        .main-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        /* --- Content & Headers --- */
+        h1, h2, h3, p { margin: 0; }
+        h1 { font-size: 28px; font-weight: 500; margin-bottom: 8px; }
+        .subtitle { font-size: 16px; color: #555; margin-bottom: 40px; }
+        h2 { font-size: 20px; font-weight: 600; margin-top: 56px; margin-bottom: 24px; border-top: 1px dotted #ccc; padding-top: 24px;}
+        h3 { font-size: 16px; font-weight: 600; margin-top: 24px; margin-bottom: 12px; }
+        p, li { max-width: 65ch; margin-bottom: 16px; color: #374151; }
+        ul, ol { padding-left: 20px; margin-bottom: 16px; }
+        pre {
+            background-color: #eee;
+            padding: 16px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: pre-wrap;
+            margin-bottom: 16px;
+        }
+        
+        /* --- Table Styles --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 16px;
+            margin-bottom: 24px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px dotted #ccc;
+        }
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: .05em;
+        }
+        
+        /* --- Calculator Card --- */
+        .calculator-card {
+            background-color: #FDFDFB;
+            border-radius: 6px;
+            padding: 24px;
+            border: 1px solid #E0E0E0;
+            margin-bottom: 64px;
+        }
+        
+        /* --- Form Elements --- */
+        .input-group label {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .calculator-input {
+            font-family: 'JetBrains Mono', monospace;
+            width: 100%;
+            border: 1px solid #ccc;
+            background: #fff;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        .calculator-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        .toggle-group legend {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 12px;
+        }
+        .button-toggles { display: flex; }
+        .button-toggles button {
+            font-family: 'JetBrains Mono', monospace;
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f1f1f1;
+            color: #333;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .button-toggles button:first-child { border-radius: 4px 0 0 4px; border-right: none; }
+        .button-toggles button:last-child { border-radius: 0 4px 4px 0; }
+        .button-toggles button.active {
+            background-color: #fff;
+            color: #0d6efd;
+            border-color: #0d6efd;
+            font-weight: 600;
+            z-index: 1;
+        }
+        
+        /* --- Results & Breakdown --- */
+        .results-area {
+            text-align: center;
+            background-color: #f0f3f8; /* A very light blue-grey */
+            border-radius: 4px;
+            padding: 24px;
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .results-area h3 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+        .results-area p { font-size: 24px; color: #0d6efd; font-weight: 600; }
+        .breakdown-area { display: none; margin-top: 24px; border-top: 1px dotted #ccc; padding-top: 24px; }
+        .breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .breakdown-grid h3 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+        .breakdown-table { width: 100%; font-size: 13px; }
+        .breakdown-table td { padding: 8px 0; border-bottom: 1px dotted #e0e0e0; }
+        .breakdown-table tr:last-child td { border: none; }
+        .breakdown-table td:last-child { text-align: right; font-weight: 500; }
+        .breakdown-table .total-row td { font-weight: 600; border-top: 1px solid #ccc; }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: 64px;
+            padding-top: 24px;
+            border-top: 1px dotted #ccc;
+        }
+        footer a { color: #555; text-decoration: none; margin-right: 24px; }
+        footer a:hover { text-decoration: underline; }
+        
+        /* --- Mobile --- */
+        @media (max-width: 768px) {
+            .options-grid, .breakdown-grid { grid-template-columns: 1fr; }
+            .main-container { padding: 24px 16px; }
+            .results-area { flex-direction: column; gap: 24px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        <!-- Calculator and initial content sections remain the same -->
+        <h1>Take-Home Salary Calculator</h1>
+        <p class="subtitle">An educational calculator to understand your salary for FY 2025-26.</p>
+
+        <section id="calculator" class="calculator-card">
+            <div class="input-group">
+                <label for="ctcInput">Enter Your Annual CTC (₹)</label>
+                <input type="text" id="ctcInput" class="calculator-input" value="12,00,000">
+            </div>
+            
+            <div class="options-grid">
+                <div class="toggle-group">
+                    <legend>Tax Regime</legend>
+                    <div class="button-toggles" id="regimeToggle">
+                        <button data-value="old">Old Regime</button>
+                        <button data-value="new" class="active">New Regime</button>
+                    </div>
+                </div>
+                <div class="toggle-group">
+                    <legend>Are you in a metro city?</legend>
+                    <div class="button-toggles" id="locationToggle">
+                        <button data-value="yes">Yes</button>
+                        <button data-value="no" class="active">No</button>
+                    </div>
+                </div>
+                <div class="toggle-group">
+                    <legend>PF Contribution</legend>
+                    <div class="button-toggles" id="pfToggle">
+                        <button data-value="full">12% on Full Basic</button>
+                        <button data-value="limited" class="active">Statutory (₹1800/mo)</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="results-area">
+                <div>
+                    <h3>Annual Take-Home</h3>
+                    <p id="annualTakeHome">₹-</p>
+                </div>
+                <div>
+                    <h3>Monthly Take-Home</h3>
+                    <p id="monthlyTakeHome">₹-</p>
+                </div>
+            </div>
+
+            <div id="breakdownArea" class="breakdown-area">
+                <div class="breakdown-grid">
+                    <div>
+                        <h3>Earnings Breakdown (Annual)</h3>
+                        <table class="breakdown-table" id="earningsList"></table>
+                    </div>
+                    <div>
+                        <h3>Deductions Breakdown (Annual)</h3>
+                        <table class="breakdown-table" id="deductionsList"></table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PREVIOUS CONTENT (Sections 1-4) -->
+        <section id="introduction">
+            <h2>1. Introduction: Why This Guide Matters</h2>
+            <p>In India, salary conversations are often filled with confusion. You receive an offer letter mentioning ₹10 LPA, and in your head, it sounds like ₹83,333 a month. But when the first salary hits your bank account, it’s closer to ₹70,000.</p>
+            <p>For most professionals, this confusion persists throughout their career:</p>
+            <ul>
+                <li>What's CTC and how is it different from in-hand?</li>
+                <li>Why do taxes, PF, and other deductions reduce what I take home?</li>
+                <li>How can I estimate my real salary before accepting an offer?</li>
+                <li>Is the old tax regime or new one better for my take-home?</li>
+            </ul>
+            <p>This guide is written to answer those questions, not just with formulas but with clarity. If you’re looking for a quick hack or a flashy calculator, this isn’t that. If you want to deeply understand how salaries work in India so you can make better decisions — welcome.</p>
+            <p>This is the kind of information we wish someone had explained clearly when we started out.</p>
+        </section>
+
+        <section id="what-is-salary">
+            <h2>2. What Is Salary? Breaking Down The Basics</h2>
+            <p>Salary sounds simple: money paid for work. But beneath that surface, especially in India, it breaks into layers, jargon, and legal rules.</p>
+            <h3>Salary Components: What Employers Typically Offer</h3>
+            <p>A typical Indian salary isn’t just one number. It’s broken down into these components:</p>
+            <table>
+                <thead><tr><th>Component</th><th>Purpose</th><th>Taxable?</th></tr></thead>
+                <tbody>
+                    <tr><td>Basic Salary</td><td>Fixed portion of your pay</td><td>Yes</td></tr>
+                    <tr><td>HRA (House Rent Allowance)</td><td>Supports rental expenses</td><td>Partially</td></tr>
+                    <tr><td>Special Allowance</td><td>Generic filler component</td><td>Yes</td></tr>
+                    <tr><td>Leave Travel Allowance (LTA)</td><td>Reimbursement for travel</td><td>Tax-exempt with proofs</td></tr>
+                    <tr><td>Bonus / Performance Pay</td><td>Variable, performance-linked</td><td>Yes</td></tr>
+                    <tr><td>Provident Fund (PF)</td><td>Retirement benefit, 12% of Basic</td><td>Tax-free on accumulation</td></tr>
+                    <tr><td>Gratuity</td><td>Payable after 5 years' service</td><td>Tax-free (limits apply)</td></tr>
+                    <tr><td>Insurance / Benefits</td><td>Health, life cover, others</td><td>Non-cash benefit</td></tr>
+                </tbody>
+            </table>
+            <p>Out of these, your Basic Salary forms the foundation for deductions (PF, Gratuity, HRA exemptions).</p>
+            <h3>Why This Structure Exists</h3>
+            <p>Employers structure salaries this way not to confuse you — but to comply with taxation, offer savings, and create long-term benefits. For you, understanding this breakdown helps in negotiating offers, evaluating take-home expectations, and optimizing tax savings.</p>
+        </section>
+
+        <section id="ctc-vs-gross">
+            <h2>3. Understanding CTC vs Gross vs In-Hand</h2>
+            <h3>Definitions You Should Know</h3>
+            <table>
+                <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+                <tbody>
+                    <tr><td>CTC (Cost to Company)</td><td>Total spend by employer annually (salary + benefits)</td></tr>
+                    <tr><td>Gross Salary</td><td>Annual pay before deductions (after employer PF, gratuity removed)</td></tr>
+                    <tr><td>Net Salary / In-Hand</td><td>Amount credited to your bank monthly after deductions</td></tr>
+                </tbody>
+            </table>
+            <h3>Why CTC Is Misleading If You Don’t Understand It</h3>
+            <p>CTC includes many things you never see in-hand:</p>
+            <ul>
+                <li>Employer PF contribution (12% of your basic)</li>
+                <li>Gratuity (a portion reserved, paid after 5+ years)</li>
+                <li>Insurance premiums (your benefit, not cash)</li>
+            </ul>
+        </section>
+
+        <section id="how-to-calculate">
+            <h2>4. How To Calculate Take-Home Salary</h2>
+            <p>If you want to estimate your take-home salary manually, this section breaks it down logically. No guesswork, no black-box calculators.</p>
+            <h3>Step 1: Identify Your Gross</h3>
+            <p>Ask HR or check the offer letter breakup: Gross = CTC - Employer PF - Gratuity - Insurance</p>
+            <h3>Step 2: Calculate Mandatory Deductions</h3>
+            <p>Provident Fund (Employee Side) is 12% of your Basic Salary monthly. Professional Tax is state-specific, typically ₹200/month.</p>
+            <h3>Step 3: Income Tax Estimation</h3>
+            <p>Using the new regime slabs for FY 2025-26, a taxable income of ₹9.6L would result in about ₹37,440 in tax annually after cess.</p>
+            <h3>Step 4: Final In-Hand Calculation</h3>
+            <p>A monthly Gross of ₹80,000 - PF (~₹3,840) - Professional Tax (~₹200) - Income Tax (~₹3,100) results in an in-hand of ~₹72,860.</p>
+            <p>Your CTC was ₹10L. What lands in your account monthly? Around ₹72,000. This is why people get shocked post-joining.</p>
+        </section>
+        
+        <!-- NEW, FULLY DETAILED CONTENT -->
+        <section id="deductions-explained">
+            <h2>5. Deductions That Impact Your In-Hand Salary</h2>
+            <p>While taxes tend to grab the spotlight, there are multiple deductions that impact your take-home salary in India. These aren't just legal necessities — they’re baked into how organizations structure compensation.</p>
+            <h3>Provident Fund (PF)</h3>
+            <p>Both you and your employer contribute 12% of your basic salary to the Employee Provident Fund. While this reduces your take-home today, it builds your long-term savings. Your contribution reduces your taxable salary under the old regime (Section 80C).</p>
+            <h3>Gratuity</h3>
+            <p>Applicable when you complete five or more years with the company. It's calculated as:</p>
+            <pre>Gratuity = (Basic + DA) × 15/26 × Years of Service</pre>
+            <p>While it won’t hit your monthly salary directly, it's part of your CTC and is deducted in planning.</p>
+            <h3>Professional Tax</h3>
+            <p>This is a minor deduction but varies by state. Typically ₹200 per month, capped at ₹2,500 annually.</p>
+            <h3>Income Tax</h3>
+            <p>Perhaps the biggest deduction from your gross salary. How much you lose depends on your income slab and whether you opt for the old or new tax regime.</p>
+            <h3>Insurance Premiums</h3>
+            <p>Companies often deduct premiums for group health or life insurance. It’s small, but cumulative.</p>
+            <h3>Other Deductions</h3>
+            <ul>
+                <li>NPS (National Pension Scheme) if opted</li>
+                <li>Loan EMIs (if salary-linked)</li>
+                <li>Food Coupons, Travel Passes (optional but deducted pre-tax)</li>
+            </ul>
+            <p>Understanding these in totality helps you avoid surprises when your first salary hits.</p>
+        </section>
+        
+        <section id="tax-regimes">
+            <h2>6. Tax Regimes in India: Old vs New (And Their Impact on Take-Home)</h2>
+            <h3>Old Tax Regime (Exemptions Heavy)</h3>
+            <p>The old regime allows various exemptions and deductions:</p>
+            <ul>
+                <li>HRA</li>
+                <li>LTA</li>
+                <li>80C (PF, LIC, ELSS)</li>
+                <li>80D (Medical Insurance)</li>
+                <li>Home Loan Interest (Section 24)</li>
+                <li>Standard Deduction</li>
+            </ul>
+            <p>Good for those who actively invest in savings and have multiple deductions.</p>
+            <h3>New Tax Regime (Simplified Slabs)</h3>
+            <p>Lower slab rates but no deductions allowed. Better suited for individuals who:</p>
+            <ul>
+                <li>Don’t pay rent</li>
+                <li>Don’t have significant savings under 80C</li>
+                <li>Prefer higher in-hand over long-term tax-saving strategies</li>
+            </ul>
+            <h3>A Practical Comparison:</h3>
+            <table>
+                <thead>
+                    <tr><th>Income</th><th>Old Regime (Post-Deductions)</th><th>New Regime (No Deductions)</th><th>Take-Home Difference</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>₹10L</td><td>~₹70-72K/month</td><td>~₹73-75K/month</td><td>Slightly higher in-hand if no exemptions in old</td></tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <section id="salary-scenarios">
+            <h2>7. Typical Salary Scenarios in India (2025)</h2>
+            <h3>₹5 LPA Package</h3>
+            <ul><li>Gross: ~₹4.8L</li><li>In-Hand: ₹39K-41K per month after deductions</li></ul>
+            <h3>₹10 LPA Package</h3>
+            <ul><li>Gross: ~₹9.6L</li><li>In-Hand: ₹70K-75K per month depending on regime, deductions</li></ul>
+            <h3>₹20 LPA Package</h3>
+            <ul><li>Gross: ~₹19.2L</li><li>In-Hand: ₹1.3-1.4L per month</li></ul>
+            <p>Note: These are approximations. City, tax planning, and components matter.</p>
+        </section>
+        
+        <section id="hra-impact">
+            <h2>8. City-wise HRA & Salary Impact (Bangalore, Mumbai, Delhi)</h2>
+            <h3>Why HRA Matters</h3>
+            <p>If you live in a metro city, HRA exemptions can reduce your taxable income significantly.</p>
+            <p>HRA Exemption Calculated As:</p>
+            <ol>
+                <li>Actual HRA received</li>
+                <li>Rent paid minus 10% of Basic</li>
+                <li>50% of Basic (metro) / 40% (non-metro)</li>
+            </ol>
+            <p>Lowest of the three is exempt.</p>
+            <h3>Example:</h3>
+            <p>Bangalore-based employee</p>
+            <ul>
+                <li>Basic: ₹50K</li>
+                <li>Rent: ₹25K/month</li>
+                <li>HRA Received: ₹20K/month</li>
+            </ul>
+            <p>Exempt HRA could reduce taxable income by ₹1-2L annually.</p>
+        </section>
+        
+        <section id="real-life-examples">
+            <h2>9. Real-Life Examples: How Salary Structures Affect In-Hand</h2>
+            <h3>Example 1: Single, Renting in Bangalore, ₹12 LPA</h3>
+            <ul><li>Likely better with Old Regime due to HRA exemptions.</li><li>Monthly in-hand: ₹78-82K approx.</li></ul>
+            <h3>Example 2: Married, Home Loan, Insurance, ₹20 LPA</h3>
+            <ul><li>Old Regime shines because 80C, 24(b) deductions apply.</li><li>Monthly in-hand: ₹1.3-1.4L approx.</li></ul>
+            <h3>Example 3: Single, No Deductions, ₹10 LPA</h3>
+            <ul><li>New Regime gives higher in-hand.</li><li>Monthly in-hand: ₹74-75K approx.</li></ul>
+        </section>
+        
+        <section id="faq">
+            <h2>10. FAQs on Take-Home Salary (2025)</h2>
+            <h3>Why is my in-hand salary lower than my CTC?</h3>
+            <p>CTC includes employer PF, gratuity, insurance — not part of your monthly pay.</p>
+            <h3>How is in-hand calculated?</h3>
+            <p>Gross minus PF, tax, professional tax, and any voluntary deductions.</p>
+            <h3>Can I avoid PF deduction?</h3>
+            <p>Legally, no — unless exempted due to higher salary under specific cases.</p>
+            <h3>Is gratuity paid monthly?</h3>
+            <p>No. Paid on resignation after 5+ years.</p>
+            <h3>Should I choose old or new regime?</h3>
+            <p>If you use deductions (80C, HRA, loans) > ₹2L/year, old is often better.</p>
+            <h3>Why do salary calculators differ?</h3>
+            <p>Some factor allowances differently or ignore variable pay structures.</p>
+        </section>
+        
+        <section id="common-mistakes">
+            <h2>11. Common Mistakes to Avoid</h2>
+            <ul>
+                <li>Confusing CTC with in-hand salary</li>
+                <li>Ignoring PF, gratuity when negotiating offers</li>
+                <li>Overestimating HRA benefits without proper proof</li>
+                <li>Assuming new tax regime is always better</li>
+            </ul>
+        </section>
+        
+        <section id="summary">
+            <h2>12. Summary: What You Should Always Keep in Mind</h2>
+            <ol>
+                <li>Your in-hand is typically 25-35% lower than CTC due to deductions.</li>
+                <li>Ask for detailed salary breakups before accepting any offer.</li>
+                <li>Consider your lifestyle — home loan, rent, savings — before picking a tax regime.</li>
+                <li>Salary calculators are helpful but general. Always double-check with your HR or a tax advisor for accuracy.</li>
+                <li>Understand your payslip — it’s your real money, not the offer letter.</li>
+            </ol>
+        </section>
+
+        <section id="why-it-matters">
+            <h2>Why Understanding This Matters</h2>
+            <p>Salary is the foundation of your financial planning. Misunderstanding it leads to disappointment, poor budgeting, and missed opportunities to save smartly. Clarity on take-home salary ensures you negotiate better, plan expenses, and make informed career decisions.</p>
+        </section>
+
+        <footer>
+            <a href="#">About</a>
+            <a href="#">Blog</a>
+            <a href="#">Privacy Policy</a>
+        </footer>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Element References ---
+            const ctcInput = document.getElementById('ctcInput');
+            const annualTakeHomeEl = document.getElementById('annualTakeHome');
+            const monthlyTakeHomeEl = document.getElementById('monthlyTakeHome');
+            const breakdownArea = document.getElementById('breakdownArea');
+            const earningsList = document.getElementById('earningsList');
+            const deductionsList = document.getElementById('deductionsList');
+            
+            const formatINR = (num) => '₹' + Math.round(num).toLocaleString('en-IN');
+            
+            // --- Tax Calculation Functions (FY 2025-26) ---
+            function calculateTaxNewRegime(income) {
+                if (income <= 700000) return 0;
+                let tax = 0;
+                if (income > 300000) tax += (Math.min(income, 600000) - 300000) * 0.05;
+                if (income > 600000) tax += (Math.min(income, 900000) - 600000) * 0.10;
+                if (income > 900000) tax += (Math.min(income, 1200000) - 900000) * 0.15;
+                if (income > 1200000) tax += (Math.min(income, 1500000) - 1200000) * 0.20;
+                if (income > 1500000) tax += (income - 1500000) * 0.30;
+                return tax + (tax * 0.04);
+            }
+            function calculateTaxOldRegime(income) {
+                if (income <= 500000) return 0;
+                let tax = 0;
+                if (income > 250000) tax += (Math.min(income, 500000) - 250000) * 0.05;
+                if (income > 500000) tax += (Math.min(income, 1000000) - 500000) * 0.20;
+                if (income > 1000000) tax += (income - 1000000) * 0.30;
+                return tax + (tax * 0.04);
+            }
+            function calculateHraExemption(basic, hra, isMetro) {
+                const hraLimit = isMetro ? basic * 0.50 : basic * 0.40;
+                return Math.min(hra, hraLimit); // Simplified assumption
+            }
+
+            // --- Main Calculation Function ---
+            function calculateSalary() {
+                const ctc = parseFloat(ctcInput.value.replace(/,/g, '')) || 0;
+                
+                const regime = document.querySelector('#regimeToggle .active').dataset.value;
+                const isMetro = document.querySelector('#locationToggle .active').dataset.value === 'yes';
+                const pfType = document.querySelector('#pfToggle .active').dataset.value;
+
+                // Standard Salary Structure Assumptions
+                const basicSalary = ctc * 0.50;
+                const hra = ctc * 0.20;
+                const specialAllowance = Math.max(0, ctc - basicSalary - hra);
+                const grossSalary = basicSalary + hra + specialAllowance;
+
+                // Deductions Calculation
+                const employeePF = pfType === 'full' ? (basicSalary * 0.12) : Math.min(basicSalary * 0.12, 21600);
+                const professionalTax = 2400;
+                const standardDeduction = 50000;
+                let hraExemption = 0;
+                let incomeTax = 0;
+
+                if (regime === 'old') {
+                    hraExemption = calculateHraExemption(basicSalary, hra, isMetro);
+                    const taxableIncome = grossSalary - standardDeduction - professionalTax - employeePF - hraExemption;
+                    incomeTax = calculateTaxOldRegime(Math.max(0, taxableIncome));
+                } else {
+                    const taxableIncome = grossSalary - standardDeduction;
+                    incomeTax = calculateTaxNewRegime(Math.max(0, taxableIncome));
+                }
+                
+                const totalDeductions = employeePF + professionalTax + incomeTax;
+                const annualTakeHome = grossSalary - totalDeductions;
+
+                // Update UI
+                annualTakeHomeEl.textContent = formatINR(annualTakeHome);
+                monthlyTakeHomeEl.textContent = formatINR(annualTakeHome / 12);
+                
+                earningsList.innerHTML = `<tbody>
+                    <tr><td>Basic Salary</td><td>${formatINR(basicSalary)}</td></tr>
+                    <tr><td>House Rent Allowance (HRA)</td><td>${formatINR(hra)}</td></tr>
+                    <tr><td>Special Allowance</td><td>${formatINR(specialAllowance)}</td></tr>
+                    <tr class="total-row"><td>Gross Salary</td><td>${formatINR(grossSalary)}</td></tr>
+                </tbody>`;
+                
+                let deductionsHTML = `<tbody>
+                    <tr><td>Provident Fund (PF)</td><td>${formatINR(employeePF)}</td></tr>
+                    <tr><td>Professional Tax</td><td>${formatINR(professionalTax)}</td></tr>`;
+                if (regime === 'old' && hraExemption > 0) {
+                    deductionsHTML += `<tr><td>HRA Exemption (deducted from taxable income)</td><td>- ${formatINR(hraExemption)}</td></tr>`;
+                }
+                 deductionsHTML += `
+                    <tr><td>Income Tax</td><td>${formatINR(incomeTax)}</td></tr>
+                    <tr class="total-row"><td>Total Deductions</td><td>${formatINR(totalDeductions)}</td></tr>
+                </tbody>`;
+                deductionsList.innerHTML = deductionsHTML;
+                breakdownArea.style.display = 'block';
+            }
+
+            // --- Event Listeners ---
+            ctcInput.addEventListener('input', calculateSalary);
+            document.querySelectorAll('.button-toggles').forEach(group => {
+                group.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        group.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        calculateSalary();
+                    }
+                });
+            });
+            
+            // --- Initial Load ---
+            calculateSalary();
+        });
+    </script>
+</body>
+</html>
