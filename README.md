@@ -1,7 +1,7 @@
 # Take-Home Salary Calculator for India
 
 A simple, educational tool to estimate your in-hand salary in India based on the latest tax slabs.  
-https://vishal-dembla.github.io/takehome-2/
+(https://vishal-dembla.github.io/Take-Home-Salary-Calculator/)
 
 ## What It Does
 
